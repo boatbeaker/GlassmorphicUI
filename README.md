@@ -6,6 +6,8 @@ Glassmorphic UI in Roblox.
 
 ![image](https://github.com/boatbomber/GlassmorphicUI/assets/40185666/8db526c2-40e3-4936-9a66-91fa030ba0f4)
 
+https://github.com/user-attachments/assets/e35049a1-64d7-408b-9571-307fc07db3a7
+
 ## Installation
 
 Via [wally](https://wally.run):
