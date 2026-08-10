@@ -4,6 +4,7 @@
 
 local RunService = game:GetService("RunService")
 local CollectionService = game:GetService("CollectionService")
+local AssetService = game:GetService("AssetService")
 
 local EditableImageBlur, PixelColorApproximation
 local Packages = script:FindFirstChild("Packages") or script.Parent
@@ -24,16 +25,21 @@ if not EditableImageBlur or not PixelColorApproximation then
 	error("Could not find required packages")
 end
 
-local EMPTY_TABLE = {}
-
 type GlassObject = {
 	Window: ImageLabel,
-	EditableImage: EditableImage,
-	Pixels: { number },
-	PixelIndex: number,
+	EditableImage: EditableImage?,
+	WarnedImageCreateFailure: boolean,
+	Pixels: buffer, -- u8 RGBA accumulator, row-major, unblurred
+	Scratch: buffer, -- blur workspace, same length as Pixels
+	PixelCount: number,
+	PixelIndex: number, -- 0-based byte offset into Pixels
 	InterlaceOffsetFlag: boolean,
+	OpaqueFilled: boolean, -- the buffer already holds the opaque window color
 	Resolution: Vector2,
-	ResolutionInverse: Vector2,
+	CellSizeX: number, -- window pixels per sample cell
+	CellSizeY: number,
+	CellCenterX: number, -- offset to a cell's center, in window pixels
+	CellCenterY: number,
 	WindowSizeX: number,
 	WindowSizeY: number,
 	WindowPositionX: number,
@@ -43,13 +49,22 @@ type GlassObject = {
 	Paused: boolean,
 }
 
+local function packColorU32(r: number, g: number, b: number): number
+	-- Little-endian u32: R in the low byte, opaque alpha in the high byte
+	return math.clamp(math.round(r * 255), 0, 255)
+		+ math.clamp(math.round(g * 255), 0, 255) * 0x100
+		+ math.clamp(math.round(b * 255), 0, 255) * 0x10000
+		+ 0xFF000000
+end
+
 local GlassmorphicUI = {}
 
 GlassmorphicUI._glassObjects = {} :: { GlassObject }
 GlassmorphicUI._glassObjectUpdateIndex = 1
+GlassmorphicUI._lastBlurDuration = 0
 GlassmorphicUI._windowToObject = setmetatable({} :: { [ImageLabel]: GlassObject }, { __mode = "k" })
 
-GlassmorphicUI.MAX_AXIS_SAMPLING_RES = 39
+GlassmorphicUI.MAX_AXIS_SAMPLING_RES = 51
 GlassmorphicUI.UPDATE_TIME_BUDGET = 3e-3
 GlassmorphicUI.RADIUS = 5
 GlassmorphicUI.TEMPORAL_SMOOTHING = 0.75
@@ -139,40 +154,93 @@ function GlassmorphicUI._totalUpdate(glassObject: GlassObject)
 	-- Perform a complete update
 	local startPixel = glassObject.PixelIndex
 	while true do
+		local before = glassObject.PixelIndex
 		GlassmorphicUI._processNextPixel(glassObject, true)
-		if glassObject.PixelIndex == startPixel then
+		local after = glassObject.PixelIndex
+		-- Stop on wraparound, or when no progress was made (unparented window,
+		-- opaque fast path, or a single-pixel image)
+		if after == startPixel or after == before then
 			break
 		end
 	end
-	EditableImageBlur({
-		image = glassObject.EditableImage,
-		pixelData = glassObject.Pixels,
+	GlassmorphicUI._applyBlur(glassObject)
+end
+
+function GlassmorphicUI._ensureEditableImage(glassObject: GlassObject): EditableImage?
+	local existing = glassObject.EditableImage
+	if existing and existing.Size == glassObject.Resolution then
+		return existing
+	end
+
+	local success, editableImage = pcall(AssetService.CreateEditableImage, AssetService, {
+		Size = glassObject.Resolution,
+	})
+	if not success or not editableImage then
+		-- Likely out of editable memory budget; retried on the next blur tick
+		if not glassObject.WarnedImageCreateFailure then
+			glassObject.WarnedImageCreateFailure = true
+			warn(
+				"GlassmorphicUI could not create an EditableImage:",
+				if success then "budget exhausted" else editableImage
+			)
+		end
+		return nil
+	end
+	glassObject.WarnedImageCreateFailure = false
+
+	if existing then
+		existing:Destroy()
+	end
+	glassObject.EditableImage = editableImage
+	glassObject.Window.ImageContent = Content.fromObject(editableImage)
+	editableImage:WritePixelsBuffer(Vector2.zero, glassObject.Resolution, glassObject.Pixels)
+
+	return editableImage
+end
+
+function GlassmorphicUI._applyBlur(glassObject: GlassObject)
+	local editableImage = GlassmorphicUI._ensureEditableImage(glassObject)
+	if not editableImage then
+		return
+	end
+
+	-- Blur a copy so the accumulator in Pixels stays unblurred.
+	local scratch = glassObject.Scratch
+	buffer.copy(scratch, 0, glassObject.Pixels)
+	EditableImageBlur.Blur({
+		pixelBuffer = scratch,
+		width = glassObject.Resolution.X,
+		height = glassObject.Resolution.Y,
 		blurRadius = glassObject.BlurRadius,
-		downscaleFactor = 1,
 		skipAlpha = true,
 	})
+	editableImage:WritePixelsBuffer(Vector2.zero, glassObject.Resolution, scratch)
 end
 
 function GlassmorphicUI._getGlassObject(Window: ImageLabel): GlassObject
 	local glassObject = GlassmorphicUI._windowToObject[Window]
 	if not glassObject then
-		local EditableImage: EditableImage
-		local ExistingEditableImage = Window:FindFirstChildWhichIsA("EditableImage")
-		if ExistingEditableImage then
-			EditableImage = ExistingEditableImage
-		else
-			EditableImage = Instance.new("EditableImage")
-			EditableImage.Parent = Window
-		end
+		-- Start with a 1x1 window-color pixel, since _updateWindowSize copies
+		-- old buffer contents into resized buffers
+		local windowColor = Window.BackgroundColor3
+		local initialPixels = buffer.create(4)
+		buffer.writeu32(initialPixels, 0, packColorU32(windowColor.R, windowColor.G, windowColor.B))
 
 		glassObject = {
 			Window = Window,
-			EditableImage = EditableImage,
-			Pixels = {},
-			PixelIndex = 1,
+			EditableImage = nil :: EditableImage?,
+			WarnedImageCreateFailure = false,
+			Pixels = initialPixels,
+			Scratch = buffer.create(4),
+			PixelCount = 1,
+			PixelIndex = 0,
 			InterlaceOffsetFlag = true,
+			OpaqueFilled = false,
 			Resolution = Vector2.one,
-			ResolutionInverse = Vector2.one,
+			CellSizeX = 1,
+			CellSizeY = 1,
+			CellCenterX = 0.5,
+			CellCenterY = 0.5,
 			WindowSizeX = 1,
 			WindowSizeY = 1,
 			WindowPositionX = 0,
@@ -301,6 +369,7 @@ function GlassmorphicUI._updateWindowColor(glassObject: GlassObject)
 	glassObject.WindowColor[2] = windowColor.G
 	glassObject.WindowColor[3] = windowColor.B
 	glassObject.WindowColor[4] = windowAlpha
+	glassObject.OpaqueFilled = false
 end
 
 function GlassmorphicUI._updateWindowSize(glassObject: GlassObject)
@@ -320,79 +389,87 @@ function GlassmorphicUI._updateWindowSize(glassObject: GlassObject)
 	local samplerSize = maxAxis / math.min(GlassmorphicUI.MAX_AXIS_SAMPLING_RES, maxAxis)
 
 	local resolutionX, resolutionY = windowSizeX // samplerSize, windowSizeY // samplerSize
-	local inverseResX, inverseResY = 1 / resolutionX, 1 / resolutionY
+	local resolution = Vector2.new(resolutionX, resolutionY)
 
-	glassObject.Resolution = Vector2.new(resolutionX, resolutionY)
-	glassObject.ResolutionInverse = Vector2.new(inverseResX, inverseResY)
-	glassObject.EditableImage.Size = glassObject.Resolution
+	-- Sample cell geometry shifts whenever the window size does, even when
+	-- the quantized resolution stays put
+	local cellSizeX, cellSizeY = windowSizeX / resolutionX, windowSizeY / resolutionY
+	glassObject.CellSizeX = cellSizeX
+	glassObject.CellSizeY = cellSizeY
+	glassObject.CellCenterX = cellSizeX / 2
+	glassObject.CellCenterY = cellSizeY / 2
 
-	-- Ensure the pixels array is correct size
-	local Pixels = glassObject.Pixels
-	local WindowColor = glassObject.WindowColor
-
-	local pixelsArrayLength = resolutionX * resolutionY * 4
-	local pixelsArrayCurrentLength = #Pixels
-	if pixelsArrayCurrentLength > pixelsArrayLength then
-		-- Remove extra pixel data by moving empties in after the pixelsArrayLength
-		table.move(EMPTY_TABLE, 1, pixelsArrayCurrentLength - pixelsArrayLength, pixelsArrayLength + 1, Pixels)
-	elseif pixelsArrayCurrentLength < pixelsArrayLength then
-		-- Add new pixels
-		for i = pixelsArrayCurrentLength + 1, pixelsArrayLength do
-			local mod4 = i % 4
-			if mod4 == 0 then
-				-- Fully opaque alpha channel
-				Pixels[i] = 1
-			else
-				Pixels[i] = WindowColor[mod4] or 1
-			end
-		end
-	end
-
-	-- Move index back to start if new size is smaller
-	if glassObject.PixelIndex > pixelsArrayLength then
-		glassObject.PixelIndex = if glassObject.InterlaceOffsetFlag then 1 else 5
-	end
-end
-
-function GlassmorphicUI._processNextPixel(glassObject: GlassObject, skipTween: boolean?)
-	local Window = glassObject.Window
-	if (not Window) or not Window.Parent then
+	if resolution == glassObject.Resolution and glassObject.EditableImage ~= nil then
 		return
 	end
 
+	glassObject.Resolution = resolution
+	glassObject.OpaqueFilled = false
+
+	-- Reallocate the pixel buffers at the new resolution
+	local WindowColor = glassObject.WindowColor
+	local pixelCount = resolutionX * resolutionY
+	local bufferLength = pixelCount * 4
+	local oldPixels = glassObject.Pixels
+	local Pixels = buffer.create(bufferLength)
+
+	-- Fill with the window color, then keep whatever old data fits
+	local windowColorU32 = packColorU32(WindowColor[1], WindowColor[2], WindowColor[3])
+	for offset = 0, bufferLength - 4, 4 do
+		buffer.writeu32(Pixels, offset, windowColorU32)
+	end
+	buffer.copy(Pixels, 0, oldPixels, 0, math.min(buffer.len(oldPixels), bufferLength))
+
+	glassObject.Pixels = Pixels
+	glassObject.Scratch = buffer.create(bufferLength)
+	glassObject.PixelCount = pixelCount
+
+	-- Move index back to start if new size is smaller
+	if glassObject.PixelIndex >= bufferLength then
+		glassObject.PixelIndex = if glassObject.InterlaceOffsetFlag or bufferLength <= 4 then 0 else 4
+	end
+end
+
+function GlassmorphicUI._processNextPixel(glassObject: GlassObject, skipTween: boolean?): boolean
+	local Window = glassObject.Window
+	if (not Window) or not Window.Parent then
+		return false
+	end
+
 	local Pixels, PixelIndex = glassObject.Pixels, glassObject.PixelIndex
+	local bufferLength = glassObject.PixelCount * 4
 	local WindowColor = glassObject.WindowColor
 
 	if WindowColor[4] == 1 then
 		-- Our window is not transparent, so there's no need to sample underneath
 		-- (It's also not glassmorphic anymore, but that's not our problem)
 
-		-- Set entire image to window color
-		local r, g, b = WindowColor[1], WindowColor[2], WindowColor[3]
-		for i = 1, #Pixels, 4 do
-			Pixels[i] = r
-			Pixels[i + 1] = g
-			Pixels[i + 2] = b
+		-- The buffer only needs one fill per color/size change; skip the
+		-- refill (and the caller's blur) once it's done and displayed
+		if glassObject.OpaqueFilled and glassObject.EditableImage then
+			return false
 		end
 
+		-- Set entire image to window color
+		local windowColorU32 = packColorU32(WindowColor[1], WindowColor[2], WindowColor[3])
+		for offset = 0, bufferLength - 4, 4 do
+			buffer.writeu32(Pixels, offset, windowColorU32)
+		end
+		glassObject.OpaqueFilled = true
+
 		-- Move index back to start
-		glassObject.PixelIndex = if glassObject.InterlaceOffsetFlag then 1 else 5
-		return
+		glassObject.PixelIndex = if glassObject.InterlaceOffsetFlag or bufferLength <= 4 then 0 else 4
+		return true
 	end
 
-	local Resolution = glassObject.Resolution
-	local ResolutionInverse = glassObject.ResolutionInverse
-	local WindowSizeX, WindowSizeY = glassObject.WindowSizeX, glassObject.WindowSizeY
-	local WindowPositionX, WindowPositionY = glassObject.WindowPositionX, glassObject.WindowPositionY
+	local resolutionX = glassObject.Resolution.X
 
 	-- Sample color at the center of our sample
 	local indexFloor4 = PixelIndex // 4
 	local color = PixelColorApproximation:GetColor(
 		Vector2.new(
-			(ResolutionInverse.X * (indexFloor4 % Resolution.X) * WindowSizeX + WindowPositionX)
-				+ (WindowSizeX * ResolutionInverse.X / 2),
-			(ResolutionInverse.Y * (indexFloor4 // Resolution.X) * WindowSizeY + WindowPositionY)
-				+ (WindowSizeY * ResolutionInverse.Y / 2)
+			glassObject.CellSizeX * (indexFloor4 % resolutionX) + glassObject.CellCenterX + glassObject.WindowPositionX,
+			glassObject.CellSizeY * (indexFloor4 // resolutionX) + glassObject.CellCenterY + glassObject.WindowPositionY
 		),
 		Window
 	)
@@ -404,23 +481,35 @@ function GlassmorphicUI._processNextPixel(glassObject: GlassObject, skipTween: b
 	color[3] = (1 - windowAlpha) * color[3] + windowAlpha * WindowColor[3]
 
 	if skipTween then
-		Pixels[PixelIndex] = color[1]
-		Pixels[PixelIndex + 1] = color[2]
-		Pixels[PixelIndex + 2] = color[3]
+		buffer.writeu8(Pixels, PixelIndex, math.clamp(math.round(color[1] * 255), 0, 255))
+		buffer.writeu8(Pixels, PixelIndex + 1, math.clamp(math.round(color[2] * 255), 0, 255))
+		buffer.writeu8(Pixels, PixelIndex + 2, math.clamp(math.round(color[3] * 255), 0, 255))
 	else
-		local prevR, prevG, prevB = Pixels[PixelIndex], Pixels[PixelIndex + 1], Pixels[PixelIndex + 2]
-		Pixels[PixelIndex] = prevR + (color[1] - prevR) * GlassmorphicUI.TEMPORAL_SMOOTHING
-		Pixels[PixelIndex + 1] = prevG + (color[2] - prevG) * GlassmorphicUI.TEMPORAL_SMOOTHING
-		Pixels[PixelIndex + 2] = prevB + (color[3] - prevB) * GlassmorphicUI.TEMPORAL_SMOOTHING
+		local smoothing = GlassmorphicUI.TEMPORAL_SMOOTHING
+		local prevR = buffer.readu8(Pixels, PixelIndex)
+		local prevG = buffer.readu8(Pixels, PixelIndex + 1)
+		local prevB = buffer.readu8(Pixels, PixelIndex + 2)
+		buffer.writeu8(Pixels, PixelIndex, math.clamp(math.round(prevR + (color[1] * 255 - prevR) * smoothing), 0, 255))
+		buffer.writeu8(
+			Pixels,
+			PixelIndex + 1,
+			math.clamp(math.round(prevG + (color[2] * 255 - prevG) * smoothing), 0, 255)
+		)
+		buffer.writeu8(
+			Pixels,
+			PixelIndex + 2,
+			math.clamp(math.round(prevB + (color[3] * 255 - prevB) * smoothing), 0, 255)
+		)
 	end
 
 	PixelIndex += 8
-	if PixelIndex > #Pixels then
+	if PixelIndex >= bufferLength then
 		glassObject.InterlaceOffsetFlag = not glassObject.InterlaceOffsetFlag
-		PixelIndex = if glassObject.InterlaceOffsetFlag then 1 else 5
+		PixelIndex = if glassObject.InterlaceOffsetFlag or bufferLength <= 4 then 0 else 4
 	end
 
 	glassObject.PixelIndex = PixelIndex
+	return true
 end
 
 function GlassmorphicUI._update()
@@ -429,7 +518,12 @@ function GlassmorphicUI._update()
 		return
 	end
 
-	local estimatedBlurTime = (totalGlassObjects * 3e-4)
+	-- Reserve room for the blur pass using last tick's measured duration
+	-- (roughly 1e-4s per max-size window when nothing is measured yet)
+	local estimatedBlurTime = GlassmorphicUI._lastBlurDuration
+	if estimatedBlurTime <= 0 then
+		estimatedBlurTime = totalGlassObjects * 1e-4
+	end
 	local allottedPixelProcessingTime = math.max(GlassmorphicUI.UPDATE_TIME_BUDGET - estimatedBlurTime, 1e-3)
 
 	local startClock = os.clock()
@@ -438,8 +532,7 @@ function GlassmorphicUI._update()
 	local updatedGlassObjects = {}
 	while os.clock() - startClock < allottedPixelProcessingTime do
 		local glassObject = GlassmorphicUI._glassObjects[GlassmorphicUI._glassObjectUpdateIndex]
-		if glassObject then
-			GlassmorphicUI._processNextPixel(glassObject, false)
+		if glassObject and GlassmorphicUI._processNextPixel(glassObject, false) then
 			updatedGlassObjects[GlassmorphicUI._glassObjectUpdateIndex] = glassObject
 		end
 		GlassmorphicUI._glassObjectUpdateIndex += 1
@@ -450,15 +543,11 @@ function GlassmorphicUI._update()
 	end
 
 	-- Blur and apply the pixels for the updated objects
+	local blurClock = os.clock()
 	for _, glassObject in updatedGlassObjects do
-		EditableImageBlur({
-			image = glassObject.EditableImage,
-			pixelData = glassObject.Pixels,
-			blurRadius = glassObject.BlurRadius,
-			downscaleFactor = 1,
-			skipAlpha = true,
-		})
+		GlassmorphicUI._applyBlur(glassObject)
 	end
+	GlassmorphicUI._lastBlurDuration = os.clock() - blurClock
 end
 
 function GlassmorphicUI._addInstance(Instance: Instance)
@@ -479,6 +568,14 @@ function GlassmorphicUI._removeInstance(Instance: Instance)
 			if index then
 				table.remove(GlassmorphicUI._glassObjects, index)
 			end
+
+			if glassObject.EditableImage then
+				glassObject.EditableImage:Destroy()
+			end
+			-- Unbind the image; pcall covers windows that are already destroyed
+			pcall(function()
+				Instance.ImageContent = Content.none
+			end)
 
 			table.clear(glassObject)
 			table.freeze(glassObject)

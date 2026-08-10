@@ -9,7 +9,7 @@ ScreenGui.Parent = script.Parent
 local background = Instance.new("ImageLabel")
 background.Name = "Background"
 background.Size = UDim2.fromScale(0.5, 1)
-background.Image = "rbxassetid://16620841089"
+background.Image = "rbxassetid://16606410725"
 background.ZIndex = 0
 background.Parent = ScreenGui
 
@@ -35,14 +35,14 @@ textLabel.Position = UDim2.fromScale(0, 0.1)
 textLabel.Parent = blurryWindow
 
 -- Make the window move in a circle
--- task.spawn(function()
--- 	local x, y
--- 	while true do
--- 		x = (math.cos(os.clock() * 2) / 5) + 0.5
--- 		y = (math.sin(os.clock() * 2) / 5) + 0.5
--- 		blurryWindow.Position = UDim2.fromScale(x, y)
--- 		task.wait()
--- 	end
--- end)
+task.spawn(function()
+	local x, y
+	while true do
+		x = (math.cos(os.clock() * 2) / 3) + 0.5
+		y = (math.sin(os.clock() * 2) / 3) + 0.5
+		blurryWindow.Position = UDim2.fromScale(x, y)
+		task.wait()
+	end
+end)
 
 blurryWindow.Parent = ScreenGui
