@@ -6,6 +6,7 @@
 
 # Wally managed packages
 Packages
+DevPackages
 
 # Roblox Studio lock files
 /*.rbxlx.lock

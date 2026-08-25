@@ -4,9 +4,15 @@ Glassmorphic UI in Roblox.
 
 [Please consider supporting my work.](https://github.com/sponsors/boatbomber)
 
-![image](https://github.com/boatbomber/GlassmorphicUI/assets/40185666/8db526c2-40e3-4936-9a66-91fa030ba0f4)
+<https://github.com/user-attachments/assets/85dd0678-88fb-4f9a-a8f6-0a4e2091502f>
 
-https://github.com/user-attachments/assets/e35049a1-64d7-408b-9571-307fc07db3a7
+Read all about how this works:
+
+<a href="https://www.boatbomber.com/blog/liquid-glass">
+  <img width="1280" height="716" alt="cover" src="https://github.com/user-attachments/assets/5613bee7-4afe-4c14-823a-fc84233a5737" />
+</a>
+
+You can also try out the playground place: https://www.roblox.com/games/75587637914653/GlassmorphicUI-Playground
 
 ## Installation
 
@@ -14,80 +20,73 @@ Via [wally](https://wally.run):
 
 ```toml
 [dependencies]
-GlassmorphicUI = "boatbomber/glassmorphicui@0.6.0"
+GlassmorphicUI = "boatbomber/glassmorphicui@1.0.0"
 ```
 
-Alternatively, grab the `.rbxm` standalone model from the latest [release.](https://github.com/boatbomber/GlassmorphicUI/releases/latest)
+Alternatively, grab the `.rbxm` standalone model from the latest [release.](https://github.com/boatbeaker/GlassmorphicUI/releases/latest)
 
 ## Usage
 
-**Setting up glassy effects:**
+Add a `GlassmorphicUI` tag to any GuiObject to add a glass background. The library inserts a `GlassPane` ImageLabel below other children.
 
-You can add a `GlassmorphicUI` tag to a Frame or other GuiObject to automatically add a glassmorphic background to it.
-Adding a `GlassmorphicUI` tag to an ImageLabel will apply the glass effects to it directly, instead of adding a background image.
+Require the module to start it, even if you only use tags.
 
-Of course, you'll need to `require` the module in order for it to run even if you only use tags and don't intend to call any of its functions directly.
+Use the API directly: `GlassmorphicUI.new()` creates a new glass window, and `GlassmorphicUI.addGlassBackground()` adds glass to an existing GuiObject.
 
-If you prefer to use the API directly instead of CollectionService tags, you can use the `GlassmorphicUI.new()` function to create a new glassy ImageLabel, `GlassmorphicUI.applyGlassToImageLabel()` to apply the glassmorphic effect to an existing ImageLabel, or `GlassmorphicUI.addGlassBackground()` to add a glassy background to an existing GuiObject. See the API section below for more details on those functions.
+## Controls
 
-**Modifying the visuals:**
+Everything is driven by attributes on the window. A wrongly typed attribute is ignored and will use the default.
 
-You can modify the glassmorphic effect by changing the `BackgroundTransparency` and `BackgroundColor3` properties of the ImageLabel. You can also use a `BlurRadius` attribute to modify the blur radius of the glassmorphic effect. It is compatible with UICorners and all other ImageLabel properties.
+`BackgroundColor3` controls the tint hue, so no attribute needed for that.
 
-A higher `BackgroundTransparency` will make the glassmorphic effect more prominent as the blurry elements underneath become more visible. The `BackgroundColor3` will affect the tint of the glass. A lower `BlurRadius` will let you see more detail behind the glass. Be aware that a lower `BlurRadius` will make the imperfections of the approximated effect more obvious and ugly.
+| Attribute | Default | Range | Meaning |
+|---|---|---|---|
+| `Thickness` | `(0.15, 0)` | UDim, resolved 1px–min axis | Depth of the refracting band. Sets both how far the lensing reaches inward and how strongly it bends |
+| `RefractionFactor` | `2.1` | 1–4 | Refractive index ratio. `1` disables refraction |
+| `ChromaticAberration` | `0.2` | 0–1 | Per-channel displacement spread that fringes the band with color: at `0.2`, red fetches 20% farther and blue 20% shorter than green. `0` disables it |
+| `CornerRadius` | `(0.8, 0)` | UDim, resolved 0–min axis | Curvature of the corners. Sets the shape of the window |
+| `SuperEllipseFactor` | `3` | 2–7 | Corner exponent. `2` is a circular corner, higher is squarer |
+| `FresnelSize` | `(0.1, 0)` | UDim, resolved 0–min axis | Reach of the rim brightening. Zero disables it |
+| `FresnelHardness` | `40` | 0–100 | How abruptly the rim brightening cuts off |
+| `FresnelIntensity` | `25` | 0–100 | Strength of the rim brightening |
+| `GlareSize` | `(0.2, 0)` | UDim, resolved 0–min axis | Reach of the rim glints. Zero disables them |
+| `GlareHardness` | `40` | 0–100 | How abruptly the glints cut off across the band |
+| `GlareIntensity` | `70` | 0–120 | Strength of the glints |
+| `GlareConvergence` | `90` | 0–100 | How tightly the glints hug the glare axis |
+| `GlareOppositeSide` | `50` | 0–100 | Strength of the second glint, opposite the first |
+| `GlareAngle` | `-50` | ±180 | Glare axis direction, in degrees |
+| `BlurRadius` | `(0.06, 0)` | UDim, resolved 1px–min axis | Frost radius, blurring the refracted backdrop beneath the rim shading; the gaussian sigma is a third of it. 1px is effectively unblurred |
+| `Transparency` | seeded | 0–1 | Tint alpha. 0 renders fully opaque and skips backdrop sampling entirely. |
+| `MaxOutputResolution` | `1024` | 16–1024 | Max axis of the output image. Lower this on memory-constrained devices |
 
-You can also use `GlassmorphicUI.setDefaultBlurRadius()` to set the default blur radius for all glassmorphic images. This will not affect images that have already been created.
+When EditableImage memory runs out, the window halves its resolution down to 32 and logs a warning.
 
 ## API
 
 ```Lua
-function GlassmorphicUI.new(): ImageLabel
+function GlassmorphicUI.new(): Frame
 ```
 
-Returns an ImageLabel with a glassmorphic effect.
+Returns a Frame with a glass background pane inside it.
 
 ```lua
 local GlassmorphicUI = require(Path.To.GlassmorphicUI)
 
-local glassyimage = GlassmorphicUI.new()
-glassyimage:SetAttribute("BlurRadius", 5)
-glassyimage.BackgroundTransparency = 0.5
-glassyimage.BackgroundColor3 = Color3.fromRGB(7, 48, 84)
-glassyimage.Size = UDim2.fromScale(0.3, 0.3)
-glassyimage.Position = UDim2.fromScale(0.5, 0.5)
-glassyimage.AnchorPoint = Vector2.new(0.5, 0.5)
-glassyimage.Parent = ScreenGui
+local glassWindow = GlassmorphicUI.new()
+glassWindow:SetAttribute("Thickness", UDim.new(0, 40))
+glassWindow:SetAttribute("Transparency", 0.5)
+glassWindow.BackgroundColor3 = Color3.fromRGB(7, 48, 84)
+glassWindow.Size = UDim2.fromScale(0.3, 0.3)
+glassWindow.Position = UDim2.fromScale(0.5, 0.5)
+glassWindow.AnchorPoint = Vector2.new(0.5, 0.5)
+glassWindow.Parent = ScreenGui
 ```
 
 ```Lua
-function GlassmorphicUI.applyGlassToImageLabel(ImageLabel: ImageLabel): ()
+function GlassmorphicUI.addGlassBackground(GuiObject: GuiObject): GuiObject
 ```
 
-Takes an existing ImageLabel and applies the glassmorphic effect to it.
-Useful for integrating GlassmorphicUI with existing UI systems.
-
-```lua
-local GlassmorphicUI = require(Path.To.GlassmorphicUI)
-
-local glassyimage = Instance.new("ImageLabel")
-glassyimage.BackgroundTransparency = 0.5
-glassyimage.BackgroundColor3 = Color3.fromRGB(7, 48, 84)
-glassyimage.Size = UDim2.fromScale(0.3, 0.3)
-glassyimage.Position = UDim2.fromScale(0.5, 0.5)
-glassyimage.AnchorPoint = Vector2.new(0.5, 0.5)
-glassyimage.Parent = ScreenGui
-
-GlassmorphicUI.applyGlassToImageLabel(glassyimage)
-```
-
-```Lua
-function GlassmorphicUI.addGlassBackground(GuiObject: GuiObject): ImageLabel
-```
-
-Takes an existing GuiObject (such as a Frame) and parents a glassy ImageLabel inside it.
-The ImageLabel will have a very low ZIndex as to appear as the background of the GuiObject.
-The GuiObject will be forced to have a BackgroundTransparency of 1, otherwise the effect would just show your GuiObject's background behind the glass.
-Useful for integrating GlassmorphicUI with existing UI systems.
+Tags an existing GuiObject and returns it. Use this to add glass to UI built by another system.
 
 ```lua
 local GlassmorphicUI = require(Path.To.GlassmorphicUI)
@@ -96,41 +95,50 @@ local frame = Instance.new("Frame")
 frame.Size = UDim2.fromScale(0.2, 0.2)
 frame.Parent = script.Parent
 
-local glassyimage = GlassmorphicUI.addGlassBackground(frame)
-glassyimage.BackgroundTransparency = 0.5
-glassyimage.BackgroundColor3 = Color3.fromRGB(7, 48, 84)
+GlassmorphicUI.addGlassBackground(frame)
+-- Set tint alpha with the attribute. BackgroundTransparency has no effect here.
+frame:SetAttribute("Transparency", 0.5)
+frame.BackgroundColor3 = Color3.fromRGB(7, 48, 84)
 ```
+
+```Lua
+function GlassmorphicUI.applyGlassToImageLabel(ImageLabel: ImageLabel): ()
+```
+
+Tags an existing ImageLabel. Equivalent to `addGlassBackground` but kept for compatibility. The glass renders above the label's `Image`.
 
 ```lua
-function GlassmorphicUI.forceUpdate(ImageLabel: ImageLabel): ImageLabel
+function GlassmorphicUI.forceUpdate(Window: GuiObject): GuiObject
 ```
 
-Forces a refresh of the glassmorphic effect on an ImageLabel. **Use sparingly, as this is an expensive operation.**
-Intended to be used when you need an immediate and total update due to major background changes, such as closing a menu underneath the glass or teleporting the player to a new location.
+Rebuilds the glass completely: geometry, sampling, and reconstruction in one frame. This is synchronous; use it only for major background changes like closing an overlay or teleporting.
 
 ```lua
-function GlassmorphicUI.pauseUpdates(Window: ImageLabel): ImageLabel
+function GlassmorphicUI.pauseUpdates(Window: GuiObject): GuiObject
 ```
 
-Pauses updates to the glassmorphic effect on an ImageLabel. Useful for reducing lag when you have a lot of glassmorphic images that don't need to update every frame.
-
-For example, if you have a glassmorphic effect on top of a background that never changes, you can just never update.
+Pauses updates to the glass on a window. Use this for windows with static backdrops, and call `forceUpdate` when needed.
 
 ```lua
-local glassyimage = GlassmorphicUI.pauseUpdates(GlassmorphicUI.new())
+local glassWindow = GlassmorphicUI.pauseUpdates(GlassmorphicUI.new())
 ```
 
-The initial update always happens, even if paused, so the glass won't be blank when created.
+The first update runs even if paused, so the glass renders initially.
 
 ```lua
-function GlassmorphicUI.resumeUpdates(Window: ImageLabel): ImageLabel
+function GlassmorphicUI.resumeUpdates(Window: GuiObject): GuiObject
 ```
 
-Resumes updates to the glassmorphic effect on an ImageLabel that has been paused by `GlassmorphicUI.pauseUpdates`.
+Resumes updates to a paused window.
 
 ```lua
-function GlassmorphicUI.setDefaultBlurRadius(BlurRadius: number): ()
+function GlassmorphicUI.setDefaultBlurRadius(BlurRadius: UDim): ()
 ```
 
-Sets the default blur radius for all glassmorphic images. Does not affect
-images that have already been created.
+Sets the default frost radius as a UDim. Windows without a `BlurRadius` attribute inherit this default at their next layout. The minimum resolved radius is 1px (effectively unblurred).
+
+```lua
+function GlassmorphicUI.getDebugStats(Window: GuiObject): DebugStats?
+```
+
+Returns pipeline stats: grid and output resolutions, backdrop samples received, frames since last reconstruction, and execution path (`"parallel"`, `"sync"`, or `"idle"`). Returns nil if the window has no glass. Allocates a fresh table per call, so poll once per frame at most.

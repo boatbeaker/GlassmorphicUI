@@ -1,0 +1,26 @@
+{
+  "name": "GlassmorphicUITest",
+  "tree": {
+    "$className": "DataModel",
+
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+
+      "DevPackages": {
+        "$path": "DevPackages"
+      },
+
+      "GlassmorphicUI": {
+        "$path": "src",
+
+        "Packages": {
+          "$path": "Packages"
+        }
+      },
+
+      "TestProject": {
+        "$path": "tests"
+      }
+    }
+  }
+}
