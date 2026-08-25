@@ -9,10 +9,250 @@ dependencies = []
 
 [[package]]
 name = "boatbomber/glassmorphicui"
-version = "0.6.0"
-dependencies = [["EditableImageBlur", "boatbomber/editableimageblur@1.0.0"], ["PixelColorApproximation", "boatbomber/pixelcolorapproximation@0.3.0"]]
+version = "1.0.0"
+dependencies = [["EditableImageBlur", "boatbomber/editableimageblur@1.0.0"], ["PixelColorApproximation", "boatbomber/pixelcolorapproximation@0.4.0"], ["Jest", "jsdotlua/jest@3.10.0"], ["JestGlobals", "jsdotlua/jest-globals@3.10.0"]]
 
 [[package]]
 name = "boatbomber/pixelcolorapproximation"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = []
+
+[[package]]
+name = "jsdotlua/boolean"
+version = "1.2.7"
+dependencies = [["number", "jsdotlua/number@1.2.7"]]
+
+[[package]]
+name = "jsdotlua/chalk"
+version = "0.2.1"
+dependencies = []
+
+[[package]]
+name = "jsdotlua/collections"
+version = "1.2.7"
+dependencies = [["es7-types", "jsdotlua/es7-types@1.2.7"], ["instance-of", "jsdotlua/instance-of@1.2.7"]]
+
+[[package]]
+name = "jsdotlua/console"
+version = "1.2.7"
+dependencies = [["collections", "jsdotlua/collections@1.2.7"]]
+
+[[package]]
+name = "jsdotlua/diff-sequences"
+version = "3.10.0"
+dependencies = [["luau-polyfill", "jsdotlua/luau-polyfill@1.2.7"]]
+
+[[package]]
+name = "jsdotlua/emittery"
+version = "3.10.0"
+dependencies = [["luau-polyfill", "jsdotlua/luau-polyfill@1.2.7"], ["promise", "jsdotlua/promise@3.5.2"]]
+
+[[package]]
+name = "jsdotlua/es7-types"
+version = "1.2.7"
+dependencies = []
+
+[[package]]
+name = "jsdotlua/expect"
+version = "3.10.0"
+dependencies = [["jest-get-type", "jsdotlua/jest-get-type@3.10.0"], ["jest-matcher-utils", "jsdotlua/jest-matcher-utils@3.10.0"], ["jest-message-util", "jsdotlua/jest-message-util@3.10.0"], ["jest-roblox-shared", "jsdotlua/jest-roblox-shared@3.10.0"], ["jest-snapshot", "jsdotlua/jest-snapshot@3.10.0"], ["jest-util", "jsdotlua/jest-util@3.10.0"], ["luau-polyfill", "jsdotlua/luau-polyfill@1.2.7"], ["luau-regexp", "jsdotlua/luau-regexp@0.2.1"], ["promise", "jsdotlua/promise@3.5.2"]]
+
+[[package]]
+name = "jsdotlua/instance-of"
+version = "1.2.7"
+dependencies = []
+
+[[package]]
+name = "jsdotlua/jest"
+version = "3.10.0"
+dependencies = [["jest-core", "jsdotlua/jest-core@3.10.0"]]
+
+[[package]]
+name = "jsdotlua/jest-circus"
+version = "3.10.0"
+dependencies = [["chalk", "jsdotlua/chalk@0.2.1"], ["expect", "jsdotlua/expect@3.10.0"], ["jest-each", "jsdotlua/jest-each@3.10.0"], ["jest-environment", "jsdotlua/jest-environment@3.10.0"], ["jest-matcher-utils", "jsdotlua/jest-matcher-utils@3.10.0"], ["jest-message-util", "jsdotlua/jest-message-util@3.10.0"], ["jest-roblox-shared", "jsdotlua/jest-roblox-shared@3.10.0"], ["jest-runtime", "jsdotlua/jest-runtime@3.10.0"], ["jest-snapshot", "jsdotlua/jest-snapshot@3.10.0"], ["jest-test-result", "jsdotlua/jest-test-result@3.10.0"], ["jest-types", "jsdotlua/jest-types@3.10.0"], ["jest-util", "jsdotlua/jest-util@3.10.0"], ["luau-polyfill", "jsdotlua/luau-polyfill@1.2.7"], ["luau-regexp", "jsdotlua/luau-regexp@0.2.1"], ["pretty-format", "jsdotlua/pretty-format@3.10.0"], ["promise", "jsdotlua/promise@3.5.2"], ["throat", "jsdotlua/throat@3.10.0"]]
+
+[[package]]
+name = "jsdotlua/jest-config"
+version = "3.10.0"
+dependencies = [["chalk", "jsdotlua/chalk@0.2.1"], ["jest-each", "jsdotlua/jest-each@3.10.0"], ["jest-environment-roblox", "jsdotlua/jest-environment-roblox@3.10.0"], ["jest-get-type", "jsdotlua/jest-get-type@3.10.0"], ["jest-message-util", "jsdotlua/jest-message-util@3.10.0"], ["jest-roblox-shared", "jsdotlua/jest-roblox-shared@3.10.0"], ["jest-types", "jsdotlua/jest-types@3.10.0"], ["jest-util", "jsdotlua/jest-util@3.10.0"], ["jest-validate", "jsdotlua/jest-validate@3.10.0"], ["luau-polyfill", "jsdotlua/luau-polyfill@1.2.7"], ["luau-regexp", "jsdotlua/luau-regexp@0.2.1"], ["promise", "jsdotlua/promise@3.5.2"]]
+
+[[package]]
+name = "jsdotlua/jest-console"
+version = "3.10.0"
+dependencies = [["chalk", "jsdotlua/chalk@0.2.1"], ["jest-each", "jsdotlua/jest-each@3.10.0"], ["jest-message-util", "jsdotlua/jest-message-util@3.10.0"], ["jest-mock", "jsdotlua/jest-mock@3.10.0"], ["jest-roblox-shared", "jsdotlua/jest-roblox-shared@3.10.0"], ["jest-types", "jsdotlua/jest-types@3.10.0"], ["jest-util", "jsdotlua/jest-util@3.10.0"], ["luau-polyfill", "jsdotlua/luau-polyfill@1.2.7"]]
+
+[[package]]
+name = "jsdotlua/jest-core"
+version = "3.10.0"
+dependencies = [["chalk", "jsdotlua/chalk@0.2.1"], ["emittery", "jsdotlua/emittery@3.10.0"], ["jest-config", "jsdotlua/jest-config@3.10.0"], ["jest-console", "jsdotlua/jest-console@3.10.0"], ["jest-message-util", "jsdotlua/jest-message-util@3.10.0"], ["jest-reporters", "jsdotlua/jest-reporters@3.10.0"], ["jest-roblox-shared", "jsdotlua/jest-roblox-shared@3.10.0"], ["jest-runner", "jsdotlua/jest-runner@3.10.0"], ["jest-runtime", "jsdotlua/jest-runtime@3.10.0"], ["jest-snapshot", "jsdotlua/jest-snapshot@3.10.0"], ["jest-test-result", "jsdotlua/jest-test-result@3.10.0"], ["jest-types", "jsdotlua/jest-types@3.10.0"], ["jest-util", "jsdotlua/jest-util@3.10.0"], ["luau-polyfill", "jsdotlua/luau-polyfill@1.2.7"], ["luau-regexp", "jsdotlua/luau-regexp@0.2.1"], ["pretty-format", "jsdotlua/pretty-format@3.10.0"], ["promise", "jsdotlua/promise@3.5.2"]]
+
+[[package]]
+name = "jsdotlua/jest-diff"
+version = "3.10.0"
+dependencies = [["chalk", "jsdotlua/chalk@0.2.1"], ["diff-sequences", "jsdotlua/diff-sequences@3.10.0"], ["jest-get-type", "jsdotlua/jest-get-type@3.10.0"], ["jest-types", "jsdotlua/jest-types@3.10.0"], ["luau-polyfill", "jsdotlua/luau-polyfill@1.2.7"], ["pretty-format", "jsdotlua/pretty-format@3.10.0"]]
+
+[[package]]
+name = "jsdotlua/jest-each"
+version = "3.10.0"
+dependencies = [["chalk", "jsdotlua/chalk@0.2.1"], ["jest-get-type", "jsdotlua/jest-get-type@3.10.0"], ["jest-types", "jsdotlua/jest-types@3.10.0"], ["jest-util", "jsdotlua/jest-util@3.10.0"], ["luau-polyfill", "jsdotlua/luau-polyfill@1.2.7"], ["luau-regexp", "jsdotlua/luau-regexp@0.2.1"], ["pretty-format", "jsdotlua/pretty-format@3.10.0"]]
+
+[[package]]
+name = "jsdotlua/jest-environment"
+version = "3.10.0"
+dependencies = [["jest-fake-timers", "jsdotlua/jest-fake-timers@3.10.0"], ["jest-mock", "jsdotlua/jest-mock@3.10.0"], ["jest-mock-genv", "jsdotlua/jest-mock-genv@3.10.0"], ["jest-types", "jsdotlua/jest-types@3.10.0"], ["luau-polyfill", "jsdotlua/luau-polyfill@1.2.7"]]
+
+[[package]]
+name = "jsdotlua/jest-environment-roblox"
+version = "3.10.0"
+dependencies = [["jest-environment", "jsdotlua/jest-environment@3.10.0"], ["jest-fake-timers", "jsdotlua/jest-fake-timers@3.10.0"], ["jest-mock", "jsdotlua/jest-mock@3.10.0"], ["jest-types", "jsdotlua/jest-types@3.10.0"], ["luau-polyfill", "jsdotlua/luau-polyfill@1.2.7"], ["promise", "jsdotlua/promise@3.5.2"]]
+
+[[package]]
+name = "jsdotlua/jest-fake-timers"
+version = "3.10.0"
+dependencies = [["jest-get-type", "jsdotlua/jest-get-type@3.10.0"], ["jest-mock", "jsdotlua/jest-mock@3.10.0"], ["luau-polyfill", "jsdotlua/luau-polyfill@1.2.7"]]
+
+[[package]]
+name = "jsdotlua/jest-get-type"
+version = "3.10.0"
+dependencies = [["luau-polyfill", "jsdotlua/luau-polyfill@1.2.7"], ["luau-regexp", "jsdotlua/luau-regexp@0.2.1"]]
+
+[[package]]
+name = "jsdotlua/jest-globals"
+version = "3.10.0"
+dependencies = [["expect", "jsdotlua/expect@3.10.0"], ["jest-environment", "jsdotlua/jest-environment@3.10.0"], ["jest-types", "jsdotlua/jest-types@3.10.0"], ["luau-polyfill", "jsdotlua/luau-polyfill@1.2.7"]]
+
+[[package]]
+name = "jsdotlua/jest-matcher-utils"
+version = "3.10.0"
+dependencies = [["chalk", "jsdotlua/chalk@0.2.1"], ["jest-diff", "jsdotlua/jest-diff@3.10.0"], ["jest-get-type", "jsdotlua/jest-get-type@3.10.0"], ["luau-polyfill", "jsdotlua/luau-polyfill@1.2.7"], ["luau-regexp", "jsdotlua/luau-regexp@0.2.1"], ["pretty-format", "jsdotlua/pretty-format@3.10.0"]]
+
+[[package]]
+name = "jsdotlua/jest-message-util"
+version = "3.10.0"
+dependencies = [["chalk", "jsdotlua/chalk@0.2.1"], ["jest-roblox-shared", "jsdotlua/jest-roblox-shared@3.10.0"], ["jest-types", "jsdotlua/jest-types@3.10.0"], ["luau-polyfill", "jsdotlua/luau-polyfill@1.2.7"], ["luau-regexp", "jsdotlua/luau-regexp@0.2.1"], ["pretty-format", "jsdotlua/pretty-format@3.10.0"]]
+
+[[package]]
+name = "jsdotlua/jest-mock"
+version = "3.10.0"
+dependencies = [["jest-mock-genv", "jsdotlua/jest-mock-genv@3.10.0"], ["jest-types", "jsdotlua/jest-types@3.10.0"], ["luau-polyfill", "jsdotlua/luau-polyfill@1.2.7"]]
+
+[[package]]
+name = "jsdotlua/jest-mock-genv"
+version = "3.10.0"
+dependencies = [["luau-polyfill", "jsdotlua/luau-polyfill@1.2.7"]]
+
+[[package]]
+name = "jsdotlua/jest-reporters"
+version = "3.10.0"
+dependencies = [["chalk", "jsdotlua/chalk@0.2.1"], ["jest-console", "jsdotlua/jest-console@3.10.0"], ["jest-message-util", "jsdotlua/jest-message-util@3.10.0"], ["jest-mock", "jsdotlua/jest-mock@3.10.0"], ["jest-roblox-shared", "jsdotlua/jest-roblox-shared@3.10.0"], ["jest-test-result", "jsdotlua/jest-test-result@3.10.0"], ["jest-types", "jsdotlua/jest-types@3.10.0"], ["jest-util", "jsdotlua/jest-util@3.10.0"], ["luau-polyfill", "jsdotlua/luau-polyfill@1.2.7"], ["path", "jsdotlua/path@3.10.0"]]
+
+[[package]]
+name = "jsdotlua/jest-roblox-shared"
+version = "3.10.0"
+dependencies = [["jest-get-type", "jsdotlua/jest-get-type@3.10.0"], ["jest-mock", "jsdotlua/jest-mock@3.10.0"], ["luau-polyfill", "jsdotlua/luau-polyfill@1.2.7"]]
+
+[[package]]
+name = "jsdotlua/jest-runner"
+version = "3.10.0"
+dependencies = [["chalk", "jsdotlua/chalk@0.2.1"], ["emittery", "jsdotlua/emittery@3.10.0"], ["jest-circus", "jsdotlua/jest-circus@3.10.0"], ["jest-console", "jsdotlua/jest-console@3.10.0"], ["jest-environment", "jsdotlua/jest-environment@3.10.0"], ["jest-message-util", "jsdotlua/jest-message-util@3.10.0"], ["jest-roblox-shared", "jsdotlua/jest-roblox-shared@3.10.0"], ["jest-runtime", "jsdotlua/jest-runtime@3.10.0"], ["jest-test-result", "jsdotlua/jest-test-result@3.10.0"], ["jest-types", "jsdotlua/jest-types@3.10.0"], ["jest-util", "jsdotlua/jest-util@3.10.0"], ["luau-polyfill", "jsdotlua/luau-polyfill@1.2.7"], ["pretty-format", "jsdotlua/pretty-format@3.10.0"], ["promise", "jsdotlua/promise@3.5.2"], ["throat", "jsdotlua/throat@3.10.0"]]
+
+[[package]]
+name = "jsdotlua/jest-runtime"
+version = "3.10.0"
+dependencies = [["emittery", "jsdotlua/emittery@3.10.0"], ["expect", "jsdotlua/expect@3.10.0"], ["jest-fake-timers", "jsdotlua/jest-fake-timers@3.10.0"], ["jest-mock", "jsdotlua/jest-mock@3.10.0"], ["jest-mock-genv", "jsdotlua/jest-mock-genv@3.10.0"], ["jest-snapshot", "jsdotlua/jest-snapshot@3.10.0"], ["jest-types", "jsdotlua/jest-types@3.10.0"], ["luau-polyfill", "jsdotlua/luau-polyfill@1.2.7"], ["promise", "jsdotlua/promise@3.5.2"]]
+
+[[package]]
+name = "jsdotlua/jest-snapshot"
+version = "3.10.0"
+dependencies = [["chalk", "jsdotlua/chalk@0.2.1"], ["jest-diff", "jsdotlua/jest-diff@3.10.0"], ["jest-get-type", "jsdotlua/jest-get-type@3.10.0"], ["jest-matcher-utils", "jsdotlua/jest-matcher-utils@3.10.0"], ["jest-roblox-shared", "jsdotlua/jest-roblox-shared@3.10.0"], ["jest-types", "jsdotlua/jest-types@3.10.0"], ["luau-polyfill", "jsdotlua/luau-polyfill@1.2.7"], ["pretty-format", "jsdotlua/pretty-format@3.10.0"], ["promise", "jsdotlua/promise@3.5.2"]]
+
+[[package]]
+name = "jsdotlua/jest-test-result"
+version = "3.10.0"
+dependencies = [["jest-types", "jsdotlua/jest-types@3.10.0"], ["luau-polyfill", "jsdotlua/luau-polyfill@1.2.7"]]
+
+[[package]]
+name = "jsdotlua/jest-types"
+version = "3.10.0"
+dependencies = [["luau-polyfill", "jsdotlua/luau-polyfill@1.2.7"], ["luau-regexp", "jsdotlua/luau-regexp@0.2.1"]]
+
+[[package]]
+name = "jsdotlua/jest-util"
+version = "3.10.0"
+dependencies = [["chalk", "jsdotlua/chalk@0.2.1"], ["jest-roblox-shared", "jsdotlua/jest-roblox-shared@3.10.0"], ["jest-types", "jsdotlua/jest-types@3.10.0"], ["luau-polyfill", "jsdotlua/luau-polyfill@1.2.7"], ["luau-regexp", "jsdotlua/luau-regexp@0.2.1"], ["picomatch", "jsdotlua/picomatch@0.4.0"], ["promise", "jsdotlua/promise@3.5.2"]]
+
+[[package]]
+name = "jsdotlua/jest-validate"
+version = "3.10.0"
+dependencies = [["chalk", "jsdotlua/chalk@0.2.1"], ["luau-polyfill", "jsdotlua/luau-polyfill@1.2.7"]]
+
+[[package]]
+name = "jsdotlua/luau-polyfill"
+version = "1.2.7"
+dependencies = [["boolean", "jsdotlua/boolean@1.2.7"], ["collections", "jsdotlua/collections@1.2.7"], ["console", "jsdotlua/console@1.2.7"], ["es7-types", "jsdotlua/es7-types@1.2.7"], ["instance-of", "jsdotlua/instance-of@1.2.7"], ["math", "jsdotlua/math@1.2.7"], ["number", "jsdotlua/number@1.2.7"], ["string", "jsdotlua/string@1.2.7"], ["symbol-luau", "jsdotlua/symbol-luau@1.0.1"], ["timers", "jsdotlua/timers@1.2.7"]]
+
+[[package]]
+name = "jsdotlua/luau-regexp"
+version = "0.2.1"
+dependencies = []
+
+[[package]]
+name = "jsdotlua/math"
+version = "1.2.7"
+dependencies = []
+
+[[package]]
+name = "jsdotlua/number"
+version = "1.2.7"
+dependencies = []
+
+[[package]]
+name = "jsdotlua/path"
+version = "3.10.0"
+dependencies = [["luau-polyfill", "jsdotlua/luau-polyfill@1.2.7"]]
+
+[[package]]
+name = "jsdotlua/picomatch"
+version = "0.4.0"
+dependencies = [["luau-polyfill", "jsdotlua/luau-polyfill@1.2.7"], ["luau-regexp", "jsdotlua/luau-regexp@0.2.1"], ["promise", "jsdotlua/promise@3.5.2"]]
+
+[[package]]
+name = "jsdotlua/pretty-format"
+version = "3.10.0"
+dependencies = [["chalk", "jsdotlua/chalk@0.2.1"], ["jest-get-type", "jsdotlua/jest-get-type@3.10.0"], ["jest-roblox-shared", "jsdotlua/jest-roblox-shared@3.10.0"], ["luau-polyfill", "jsdotlua/luau-polyfill@1.2.7"], ["luau-regexp", "jsdotlua/luau-regexp@0.2.1"], ["react-is", "jsdotlua/react-is@17.2.1"]]
+
+[[package]]
+name = "jsdotlua/promise"
+version = "3.5.2"
+dependencies = []
+
+[[package]]
+name = "jsdotlua/react-is"
+version = "17.2.1"
+dependencies = [["shared", "jsdotlua/shared@17.2.1"]]
+
+[[package]]
+name = "jsdotlua/shared"
+version = "17.2.1"
+dependencies = [["luau-polyfill", "jsdotlua/luau-polyfill@1.2.7"]]
+
+[[package]]
+name = "jsdotlua/string"
+version = "1.2.7"
+dependencies = [["es7-types", "jsdotlua/es7-types@1.2.7"], ["number", "jsdotlua/number@1.2.7"]]
+
+[[package]]
+name = "jsdotlua/symbol-luau"
+version = "1.0.1"
+dependencies = []
+
+[[package]]
+name = "jsdotlua/throat"
+version = "3.10.0"
+dependencies = [["luau-polyfill", "jsdotlua/luau-polyfill@1.2.7"], ["promise", "jsdotlua/promise@3.5.2"]]
+
+[[package]]
+name = "jsdotlua/timers"
+version = "1.2.7"
+dependencies = [["collections", "jsdotlua/collections@1.2.7"]]
