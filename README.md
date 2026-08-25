@@ -14,6 +14,8 @@ Read all about how this works:
 
 You can also try out the playground place: https://www.roblox.com/games/75587637914653/GlassmorphicUI-Playground
 
+https://github.com/user-attachments/assets/e35049a1-64d7-408b-9571-307fc07db3a7
+
 ## Installation
 
 Via [wally](https://wally.run):
