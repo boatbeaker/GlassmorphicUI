@@ -12,6 +12,8 @@ Read all about how this works:
   <img width="1280" height="716" alt="cover" src="https://github.com/user-attachments/assets/5613bee7-4afe-4c14-823a-fc84233a5737" />
 </a>
 
+Alternatively, try the playground place: https://www.roblox.com/games/75587637914653/GlassmorphicUI-Playground
+
 ## Installation
 
 Via [wally](https://wally.run):
